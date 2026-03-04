@@ -1,5 +1,5 @@
 # Stage 1: Base image with apt packages
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:debianbullseye-8446af38-ls104 AS base
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:debianbookworm AS base
 
 ENV TITLE=MetaTrader
 ENV WINEARCH=win64
@@ -24,10 +24,10 @@ RUN apt-get install -y \
     && pip3 install --upgrade pip
 
 # Add WineHQ repository key and APT source
-RUN wget -q https://dl.winehq.org/wine-builds/winehq.key > /dev/null 2>&1\
-    && apt-key add winehq.key \
-    && add-apt-repository 'deb https://dl.winehq.org/wine-builds/debian/ bullseye main' \
-    && rm winehq.key
+RUN apt-get install -y ca-certificates gnupg \
+    && mkdir -pm755 /etc/apt/keyrings \
+    && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor -o /etc/apt/keyrings/winehq-archive.key \
+    && echo "deb [signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/debian/ bookworm main" > /etc/apt/sources.list.d/winehq.list
 
 # Add i386 architecture and update package lists
 RUN dpkg --add-architecture i386 \
